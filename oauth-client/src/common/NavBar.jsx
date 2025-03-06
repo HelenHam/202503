@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 const NavBar = () => {
@@ -6,8 +7,16 @@ const NavBar = () => {
       setPage((localStorage.getItem("isPage") == null)?false:true);
   }, []);
   const logout = () => {
-      localStorage.removeItem("isPage");
-      document.location.href = "/signIn";
+    axios.post("http://localhost:8000/oauth/logout", {}, {withCredentials: true})
+    .then(res => {
+      if (res.data === true) { 
+        localStorage.removeItem("isPage");
+        alert("로그아웃 성공");
+        document.location.href = "/signIn";
+      } else {
+        alert("로그아웃 실패");
+      }
+    })
   }
   return (
     <nav className="navbar" style={{"backgroundColor": "#2e2420"}}>

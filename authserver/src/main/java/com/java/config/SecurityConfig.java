@@ -70,7 +70,9 @@ public class SecurityConfig {
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer();
         http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher());
-        http.with(authorizationServerConfigurer, Customizer.withDefaults());
+//        http.with(authorizationServerConfigurer, Customizer.withDefaults());
+        http.with(authorizationServerConfigurer, (authorizationServer) -> authorizationServer.oidc(Customizer.withDefaults()));
+        // defaults인지 아닌지에 따라 사용할 수 있는 엔드포인트가 달라짐
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests((authorize) -> {

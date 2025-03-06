@@ -38,13 +38,12 @@ const Reg = () => {
   const asynEvent = () => {
     console.log("비동기 통신 요청");
     axios
-      .post("http://localhost:8000/signUp", user)
+      .post("http://localhost:8000/signUp", user, {withCredentials: true})
       .then(res => {
         console.log(res);
           if (res.data === true) { 
           alert("회원가입 성공");
-          localStorage.setItem("isPage", true);
-          document.location.href = "/signIn2";
+          document.location.href = "/signIn";
         } else {
           alert("회원가입 실패");
         }

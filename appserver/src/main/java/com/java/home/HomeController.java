@@ -3,6 +3,8 @@ package com.java.home;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -63,32 +65,64 @@ public class HomeController {
 
     @ResponseBody
     @PostMapping("/signUp")
-    public boolean signUp(@RequestBody HomeReqDTO homeReqDTO) {
-        boolean status = true;
-        try {
-            System.out.println("-------------------------------" + homeReqDTO);
-            Map<String, String> resultMap = signUpReq(homeReqDTO);
-        } catch (Exception e) {
-            status = false;
-        }
-        return status;
-    }
+    public boolean signUp(@RequestBody HomeReqDTO homeReqDTO, HttpServletResponse response) {
+        // cookie 초기화
+        ResponseCookie targetCookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true).secure(true).path("/").maxAge(0).build();
+        response.addHeader(HttpHeaders.SET_COOKIE, targetCookie.toString());
 
-    private Map<String, String> signUpReq(HomeReqDTO homeReqDTO) {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("client_id", homeReqDTO.getId());
-        formData.add("client_secret", homeReqDTO.getPwd());
-        formData.add("redirectUri", "http://localhost:8000");
-        formData.add("postLogoutRedirectUri", "http://localhost:8000");
-        formData.add("requireAuthorizationConsent", "1");
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+        formData.add("clientId",homeReqDTO.getId());
+        formData.add("clientSecret",homeReqDTO.getPwd());
+        formData.add("redirectUri","http://localhost:8000");
+        formData.add("postLogoutRedirectUri","http://localhost:8000");
+        formData.add("requireAuthorizationConsent",true);
         return RestClient.create().post()
-                .uri("http://d.0neteam.co.kr/addClient")
+                .uri("https://d.0neteam.co.kr/addClient")
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .body(formData)
                 .retrieve()
-                .toEntity(Map.class)
+                .toEntity(Boolean.class)
                 .getBody();
     }
+
+    @ResponseBody
+    @PostMapping("/oauth/logout")
+    public boolean logout(HttpServletResponse response) {
+        ResponseCookie targetCookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true).secure(true).path("/").maxAge(0).build();
+        response.addHeader(HttpHeaders.SET_COOKIE, targetCookie.toString());
+        return true;
+    }
+
+//    @ResponseBody
+//    @PostMapping("/userInfo")
+//    public String userInfo(@ModelAttribute HomeReqDTO homeReqDTO, HttpServletResponse response, HttpSession session) {
+//        String status = "ok";
+//        System.out.println("111111111111111111111111111111111111111111111111111111111");
+//        try {
+//            Map<String, String> resultMap = getToken(homeReqDTO);
+//            String access_token = resultMap.get("access_token");
+//
+//            System.out.println("access_token : " + access_token);
+//
+//            Cookie cookie = new Cookie("access_token", access_token);
+//            cookie.setHttpOnly(true); // JavaScript에서 접근 불가
+//            cookie.setSecure(true); // HTTPS에서만 전송
+//            cookie.setPath("/");
+//            cookie.setMaxAge(session.getMaxInactiveInterval());
+//
+//
+//            System.out.println("cookie : " + cookie);
+//            System.out.println("access_token : " + access_token);
+//
+//            response.addCookie(cookie);
+//        } catch (Exception e) {
+//            status = "no";
+//        }
+//        return "redirect:/?" + status;
+//    }
+
 
     private Map<String, String> getToken(HomeReqDTO homeReqDTO) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
